@@ -897,6 +897,14 @@ const UTILITY_ICONS = [
     { 'iconName': 'utility:zoomout', 'id': 'utility:zoomout' }
 ]
 
+const ICON_TYPES = {
+    ALL: { label: 'All icon types', value: '' },
+    STANDARD: { label: 'Standard icons', value: 'standard' },
+    CUSTOM: { label: 'Custom icons', value: 'custom' },
+    UTILITY: { label: 'Utility icons', value: 'utility' },
+    ACTION: { label: 'Action icons', value: 'action' },
+}
+
 const MODES = {
     ACCORDION: 'accordion',
     TAB: 'tab',
@@ -923,10 +931,10 @@ export default class ObjectIconSelector extends LightningElement {
     @track utilityIcons = UTILITY_ICONS;
     @track standardIcons = STANDARD_ICONS;
 
-    @api excludeStandardIcons;
-    @api excludeCustomIcons;
-    @api excludeUtilityIcons;    
-    @api excludeActionIcons;
+    @api hideStandardIcons;
+    @api hideCustomIcons;
+    @api hideUtilityIcons;    
+    @api hideActionIcons;
 
     @api mode;
     @api label = 'Pick an Icon';
@@ -940,20 +948,25 @@ export default class ObjectIconSelector extends LightningElement {
         if (!this.rendered) {
             return;
         }
+        console.log('comboboxMode = '+ this.comboboxMode);
         if (this.comboboxMode) {
-            if (iconName) {            
-                this.addClass('.comboboxInput', 'slds-combobox__input-value');
-                this.switchClass('.slds-combobox__form-element', 'slds-input-has-icon_right', 'slds-input-has-icon_left-right');
-                this.addClass('.slds-combobox_container', 'slds-has-selection');
-                this.template.querySelector('.comboboxInput').setAttribute('readonly', '');
-                this.template.querySelector('.comboboxInput').value = iconName;
+            console.log('t1');
+            if (iconName) {   
+                console.log('t2');
+                this.addClass('.slds-combobox-addon_end .comboboxInput', 'slds-combobox__input-value');
+                this.switchClass('.slds-combobox-addon_end .slds-combobox__form-element', 'slds-input-has-icon_right', 'slds-input-has-icon_left-right');
+                //this.addClass('.slds-combobox-addon_end .comboboxInput', 'slds-input-has-icon_left-right');
+                console.log(JSON.stringify(this.template.querySelector('.slds-combobox-addon_end .slds-combobox__form-element').classList));
+                this.addClass('.slds-combobox-addon_end.slds-combobox_container', 'slds-has-selection');
+                this.template.querySelector('.slds-combobox-addon_end .comboboxInput').setAttribute('readonly', '');
+                this.template.querySelector('.slds-combobox-addon_end .comboboxInput').value = iconName;
                 this.blurSearchbox();
             } else {
-                this.removeClass('.comboboxInput', 'slds-combobox__input-value');
-                this.switchClass('.slds-combobox__form-element', 'slds-input-has-icon_left-right', 'slds-input-has-icon_right');            
-                this.removeClass('.slds-combobox_container', 'slds-has-selection');
-                this.template.querySelector('.comboboxInput').removeAttribute('readonly');
-                this.template.querySelector('.comboboxInput').value = null;
+                this.removeClass('.slds-combobox-addon_end .comboboxInput', 'slds-combobox__input-value');
+                this.switchClass('.slds-combobox-addon_end .slds-combobox__form-element', 'slds-input-has-icon_left-right', 'slds-input-has-icon_right');            
+                this.removeClass('.slds-combobox-addon_end.slds-combobox_container', 'slds-has-selection');
+                this.template.querySelector('.slds-combobox-addon_end .comboboxInput').removeAttribute('readonly');
+                this.template.querySelector('.slds-combobox-addon_end .comboboxInput').value = null;
             }
         }
         const iconSelectedEvent = new CustomEvent('iconselection', { detail: iconName });
@@ -961,6 +974,8 @@ export default class ObjectIconSelector extends LightningElement {
     }
     _iconName;
     @track icons = [];
+    @track iconTypes = [ICON_TYPES.ALL];
+    selectedIconType = ICON_TYPES.ALL;
 
     @track columns = columns;
 
@@ -1001,15 +1016,15 @@ export default class ObjectIconSelector extends LightningElement {
     }
 
     get filteredIcons() {
-        if (!this.searchText) {
-            return this.icons;
-        }      
-        let icons = [];
-        for (let icon of this.icons) {
-            if (icon.iconName.toLowerCase().includes(this.searchText)) {
-                icons.push(icon);
-            }
-        }
+        let icons = this.icons.filter(icon => {
+            return icon.iconName.startsWith(this.selectedIconType.value) && (!this.searchText || icon.iconName.toLowerCase().includes(this.searchText));
+        })    
+        // let icons = [];
+        // for (let icon of this.icons) {
+        //     if (icon.iconName.toLowerCase().includes(this.searchText)) {
+        //         icons.push(icon);
+        //     }
+        // }
         return icons;
     }
 
@@ -1026,11 +1041,25 @@ export default class ObjectIconSelector extends LightningElement {
     }
 
     connectedCallback() {
-        if (!this.excludeStandardIcons) this.icons.push(...this.standardIcons);
-        if (!this.excludeCustomIcons) this.icons.push(...this.customIcons);
-        if (!this.excludeUtilityIcons) this.icons.push(...this.utilityIcons);
+        if (!this.hideStandardIcons) {
+            this.icons.push(...this.standardIcons);
+            this.iconTypes.push(ICON_TYPES.STANDARD);
+        }
+        if (!this.hideCustomIcons) {
+            this.icons.push(...this.customIcons);
+            this.iconTypes.push(ICON_TYPES.CUSTOM);
+        }
+        if (!this.hideUtilityIcons) {
+            this.icons.push(...this.utilityIcons);
+            this.iconTypes.push(ICON_TYPES.UTILITY);
+        }
+
+        if (this.iconTypes.length == 2) {
+            this.iconTypes.shift();
+            this.selectedIconType = this.iconTypes[0];
+        }
         // Action icons display weirdly in the combobox so I'm leaving them out for now
-        //if (!this.excludeActionIcons) this.icons.push(...this.actionIcons);
+        //if (!this.hideActionIcons) this.icons.push(...this.actionIcons);
     }
 
     renderedCallback() {
@@ -1057,12 +1086,12 @@ export default class ObjectIconSelector extends LightningElement {
     }
 
     showList() {
-        this.addClass('.slds-dropdown-trigger', CLASSES.OPEN);
+        this.addClass('.slds-combobox-addon_end .slds-dropdown-trigger', CLASSES.OPEN);
         this.focusSearchbox();
     }
 
     hideList() {
-        this.removeClass('.slds-dropdown-trigger', CLASSES.OPEN);
+        this.removeClass('.slds-combobox-addon_end .slds-dropdown-trigger', CLASSES.OPEN);
     }
 
     loadMore() {
@@ -1070,11 +1099,11 @@ export default class ObjectIconSelector extends LightningElement {
     }
 
     focusSearchbox() {
-        this.template.querySelector('.comboboxInput').focus();
+        this.template.querySelector('.slds-combobox-addon_end .comboboxInput').focus();
     }
 
     blurSearchbox() {
-        this.template.querySelector('.comboboxInput').blur();
+        this.template.querySelector('.slds-combobox-addon_end .comboboxInput').blur();
     }
 
     clearSearchbox() {
@@ -1107,6 +1136,20 @@ export default class ObjectIconSelector extends LightningElement {
             this.currentMaxResults = this.maxResults;
             this.hideList();
         }
+    }
+
+    handleIconTypeFocus() {
+        this.addClass('.slds-combobox-addon_start .slds-dropdown-trigger', CLASSES.OPEN);
+    }
+
+    handleIconTypeBlur() {
+        this.removeClass('.slds-combobox-addon_start .slds-dropdown-trigger', CLASSES.OPEN);
+    }
+
+    handleIconTypeSelect(event) {
+        this.selectedIconType = this.iconTypes.find(iconType => {
+            return iconType.value === event.currentTarget.dataset.iconType;
+        });
     }
 
     handleDropdownClick() {

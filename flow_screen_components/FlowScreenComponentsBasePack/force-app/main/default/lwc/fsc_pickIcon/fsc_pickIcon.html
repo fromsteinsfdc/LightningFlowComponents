@@ -45,7 +45,7 @@ Updates:    Added an option to hide the Actions Icons
                         </lightning-tab>
                         <lightning-tab label="Open" title="Click here to open the Icon Picker">
                             <lightning-accordion allow-multiple-sections-open active-section-name={activeSections}>
-                                <template if:false={excludeStandardIcons}>
+                                <template if:false={hideStandardIcons}>
                                     <lightning-accordion-section name="S" label="Standard Icons"
                                         title="Standard and Custom Object icons represent Salesforce entities and objects (Account, Case, etc.)">
                                         <div style={tabHeight}>
@@ -56,7 +56,7 @@ Updates:    Added an option to hide the Actions Icons
                                         </div>
                                     </lightning-accordion-section>
                                 </template>
-                                <template if:false={excludeUtilityIcons}>
+                                <template if:false={hideUtilityIcons}>
                                     <lightning-accordion-section name="U" label="Utility Icons"
                                         title="Utility icons are simple, single-color glyphs that identify labels and actions across form factors">
                                         <div style={tabHeight}>
@@ -67,7 +67,7 @@ Updates:    Added an option to hide the Actions Icons
                                         </div>
                                     </lightning-accordion-section>
                                 </template>
-                                <template if:false={excludeCustomIcons}>
+                                <template if:false={hideCustomIcons}>
                                     <lightning-accordion-section name="C" label="Custom Icons"
                                         title="Standard and Custom Object icons represent Salesforce entities and objects (Account, Case, etc.)">
                                         <div style={tabHeight}>
@@ -78,7 +78,7 @@ Updates:    Added an option to hide the Actions Icons
                                         </div>
                                     </lightning-accordion-section>
                                 </template>
-                                <template if:false={excludeActionIcons}>
+                                <template if:false={hideActionIcons}>
                                     <lightning-accordion-section name="A" label="Action Icons"
                                         title="Action icons are for use with quick actions on touch-screen devices">
                                         <div style={tabHeight}>
@@ -101,7 +101,7 @@ Updates:    Added an option to hide the Actions Icons
                         <lightning-tab style={tabStyle} label="SELECT TYPE"
                             title="Select one of the tabs to the right to pick an Icon Type">
                         </lightning-tab>
-                        <template if:false={excludeStandardIcons}>
+                        <template if:false={hideStandardIcons}>
                             <lightning-tab label="Standard Icons" icon-name="standard:case"
                                 title="Standard and Custom Object icons represent Salesforce entities and objects (Account, Case, etc.)">
                                 <div style={tabHeight}>
@@ -112,7 +112,7 @@ Updates:    Added an option to hide the Actions Icons
                                 </div>
                             </lightning-tab>
                         </template>
-                        <template if:false={excludeUtilityIcons}>
+                        <template if:false={hideUtilityIcons}>
                             <lightning-tab label="Utility Icons" icon-name="utility:einstein"
                                 title="Utility icons are simple, single-color glyphs that identify labels and actions across form factors">
                                 <div style={tabHeight}>
@@ -123,7 +123,7 @@ Updates:    Added an option to hide the Actions Icons
                                 </div>
                             </lightning-tab>
                         </template>
-                        <template if:false={excludeCustomIcons}>
+                        <template if:false={hideCustomIcons}>
                             <lightning-tab label="Custom Icons" icon-name="custom:custom61"
                                 title="Standard and Custom Object icons represent Salesforce entities and objects (Account, Case, etc.)">
                                 <div style={tabHeight}>
@@ -134,7 +134,7 @@ Updates:    Added an option to hide the Actions Icons
                                 </div>
                             </lightning-tab>
                         </template>
-                        <template if:false={excludeActionIcons}>
+                        <template if:false={hideActionIcons}>
                             <lightning-tab label="Action Icons" icon-name="action:flow"
                                 title="Action icons are for use with quick actions on touch-screen devices">
                                 <div style={tabHeight}>
@@ -151,81 +151,127 @@ Updates:    Added an option to hide the Actions Icons
 
             <template if:true={comboboxMode}>
                 <label class="slds-form-element__label">{label}</label>
-                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
-                    <div class="slds-combobox_container">
-                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" role="combobox">
-                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
-                                role="none">
-                                <button
-                                    class="slds-icon slds-input__icon slds-theme_default slds-p-right_small slds-p-bottom_small">
-                                    <lightning-icon size="x-small" icon-name={searchboxIcon}
-                                        onmousedown={handleSearchboxIconClick}></lightning-icon>
-                                </button>
-                                <template if:true={iconName}>
-                                    <span class="slds-icon_container slds-combobox__input-entity-icon">
-                                        <lightning-icon
-                                            class="slds-icon slds-icon_small slds-input__icon_left searchboxIcon"
-                                            icon-name={iconName}></lightning-icon>
-                                    </span>
-                                </template>
-                                <input type="text" placeholder="Type to search"
-                                    class="slds-input slds-combobox__input comboboxInput" onfocus={handleSearchFocus}
-                                    onkeyup={handleSearchChange} onchange={handleSearchChange}
-                                    onblur={handleSearchBlur} />
-                            </div>
+                <div class="slds-form-element__control">
+                    <div class="slds-combobox-group">
+                        <div class="slds-combobox_object-switcher slds-combobox-addon_start slds-hide">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label slds-assistive-text">Filter Search
+                                    by:</label>
+                                <div class="slds-form-element__control">
+                                    <div class="slds-combobox_container">
+                                        <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click"
+                                            aria-expanded="false" aria-haspopup="listbox" role="combobox">
+                                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
+                                                role="none">
+                                                <lightning-icon size="x-small"
+                                                    class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default"
+                                                    icon-name="utility:down"></lightning-icon>
 
-                            <div class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid"
-                                role="listbox" onmousedown={handleDropdownClick}>
-                                <ul class="slds-listbox slds-listbox_vertical" role="presentation">
-                                    <template for:each={displayedIcons} for:item="icon">
-                                        <li role="presentation" class="slds-listbox__item" key={icon.iconName}
-                                            data-icon={icon.iconName} onmousedown={handleIconSelect}>
-                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
-                                                role="option">
-                                                <span class="slds-media__figure slds-listbox__option-icon">
-                                                    <lightning-icon icon-name={icon.iconName} size="small">
-                                                    </lightning-icon>
-                                                </span>
-                                                <span class="slds-media__body">
-                                                    <span class="slds-truncate"
-                                                        title={icon.iconName}>{icon.iconName}</span>
-                                                </span>
+                                                <input type="text"
+                                                    class="slds-input slds-combobox__input slds-combobox__input-value"
+                                                    role="textbox" value={selectedIconType.label} readonly
+                                                    onfocus={handleIconTypeFocus} onblur={handleIconTypeBlur} />
                                             </div>
-                                        </li>
+                                            <div class="slds-dropdown slds-dropdown_length-5 slds-dropdown_x-small slds-dropdown_left"
+                                                role="listbox">
+                                                <ul class="slds-listbox slds-listbox_vertical" role="group"
+                                                    aria-label="Suggested for you">
+                                                    <template for:each={iconTypes} for:item="iconType">
+                                                        <li role="presentation" class="slds-listbox__item"
+                                                            key={iconType.value} data-icon-type={iconType.value} onmousedown={handleIconTypeSelect}>
+                                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                                role="option">
+                                                                <span class="slds-media__body">
+                                                                    <span class="slds-truncate"
+                                                                        title={iconType.label}>{iconType.label}</span>
+                                                                </span>
+                                                            </div>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slds-combobox_container slds-combobox-addon_end">
+                            <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click"
+                                role="combobox">
+                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
+                                    role="none">
+                                    <button
+                                        class="slds-icon slds-input__icon slds-theme_default slds-p-right_small slds-p-bottom_small">
+                                        <lightning-icon size="x-small" icon-name={searchboxIcon}
+                                            onmousedown={handleSearchboxIconClick}></lightning-icon>
+                                    </button>
+                                    <template if:true={iconName}>
+                                        <span class="slds-icon_container slds-combobox__input-entity-icon">
+                                            <lightning-icon
+                                                class="slds-icon slds-icon_small slds-input__icon_left searchboxIcon"
+                                                icon-name={iconName}></lightning-icon>
+                                        </span>
                                     </template>
+                                    <input type="text" placeholder="Type to search"
+                                        class="slds-input slds-combobox__input comboboxInput"
+                                        onfocus={handleSearchFocus} onkeyup={handleSearchChange}
+                                        onchange={handleSearchChange} onblur={handleSearchBlur} />
+                                </div>
 
-                                    <!-- If the number of icons that match the current search term is greater than the amount of results currently set to be displayed  -->
-                                    <template if:true={resultsExceedMax}>
-                                        <li role="presentation"
-                                            class="slds-listbox__item slds-border_top slds-theme_default"
-                                            onclick={loadMore}>
-                                            <!-- <span class="slds-truncate slds-align_absolute-center slds-p-around_xx-small slds-text-link_reset"></span> -->
+                                <div class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid"
+                                    role="listbox" onmousedown={handleDropdownClick}>
+                                    <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                        <template for:each={displayedIcons} for:item="icon">
+                                            <li role="presentation" class="slds-listbox__item" key={icon.iconName}
+                                                data-icon={icon.iconName} onmousedown={handleIconSelect}>
+                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                    role="option">
+                                                    <span class="slds-media__figure slds-listbox__option-icon">
+                                                        <lightning-icon icon-name={icon.iconName} size="small">
+                                                        </lightning-icon>
+                                                    </span>
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-truncate"
+                                                            title={icon.iconName}>{icon.iconName}</span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </template>
 
-                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
-                                                role="option">
-                                                <!-- <span class="slds-media__figure slds-listbox__option-icon">
+                                        <!-- If the number of icons that match the current search term is greater than the amount of results currently set to be displayed  -->
+                                        <template if:true={resultsExceedMax}>
+                                            <li role="presentation"
+                                                class="slds-listbox__item slds-border_top slds-theme_default"
+                                                onclick={loadMore}>
+                                                <!-- <span class="slds-truncate slds-align_absolute-center slds-p-around_xx-small slds-text-link_reset"></span> -->
+
+                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                    role="option">
+                                                    <!-- <span class="slds-media__figure slds-listbox__option-icon">
                                                     <lightning-icon icon-name={icon.iconName} size="small"></lightning-icon>
                                                 </span> -->
-                                                <span class="slds-media__body">
-                                                    <span class="slds-truncate">{loadMoreString}</span>
-                                                </span>
-                                            </div>
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-truncate">{loadMoreString}</span>
+                                                    </span>
+                                                </div>
 
-                                        </li>
-                                    </template>
+                                            </li>
+                                        </template>
 
-                                    <!-- If no matches were found, let the user know -->
-                                    <template if:false={displayedIcons.length}>
-                                        <li role="presentation" class="slds-listbox__item">
-                                            <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
-                                                role="option">
-                                                <span class="slds-media__body">
-                                                    <span class="slds-truncate">{noMatchesFoundString}</span>
-                                                </span>
-                                            </div>
-                                        </li>
-                                    </template>
-                                </ul>
+                                        <!-- If no matches were found, let the user know -->
+                                        <template if:false={displayedIcons.length}>
+                                            <li role="presentation" class="slds-listbox__item">
+                                                <div class="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small"
+                                                    role="option">
+                                                    <span class="slds-media__body">
+                                                        <span class="slds-truncate">{noMatchesFoundString}</span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -233,7 +279,8 @@ Updates:    Added an option to hide the Actions Icons
             </template>
 
             <template if:true={invalidMode}>
-                <div class="slds-text-color_error">Icon Selector error: a valid display mode has not been entered. Choose 'accordion', 'tab', or 'combobox'.</div>
+                <div class="slds-text-color_error">Icon Selector error: a valid display mode has not been entered.
+                    Choose 'accordion', 'tab', or 'combobox'.</div>
             </template>
         </div>
     </div>
