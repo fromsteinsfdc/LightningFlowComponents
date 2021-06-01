@@ -519,6 +519,13 @@ export default class FlowButtonBarCPE extends LightningElement {
         this.activeDropZoneIndex = null;
     }
 
+    handleDropzoneDrop(event) {
+        console.log('in handleDropzoneDrop');
+        console.log('initial list = '+ JSON.stringify(this.buttons))
+        this.buttons = event.detail.reorderedList;
+        console.log('reorderedList = '+ JSON.stringify(this.buttons));
+    }
+
     /* STYLE EVENT HANDLERS */
     handleStyleFocus(event) {
         this.displayVariants = true;
