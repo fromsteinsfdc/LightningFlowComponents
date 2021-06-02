@@ -417,16 +417,17 @@ export default class FlowButtonBarCPE extends LightningElement {
 
     /* INPUT CHANGE EVENT HANDLERS */
     handleModalLabelChange(event) {
-        this.selectedButton.label = event.detail.value;
+        this.selectedButton.label = event.currentTarget.value;
     }
-    handleModalLabelBlur() {
+    handleModalLabelBlur(event) {
+        this.selectedButton.label = event.currentTarget.value;
         this.setValueFromLabel();
     }
     handleModalValueChange(event) {
-        this.selectedButton.value = event.detail.value;
+        this.selectedButton.value = event.currentTarget.value;
     }
     handleModalDescriptionChange(event) {
-        this.selectedButton.descriptionText = event.detail.value;
+        this.selectedButton.descriptionText = event.currentTarget.value;
     }
 
     handleComboboxChange(event) {
@@ -467,7 +468,7 @@ export default class FlowButtonBarCPE extends LightningElement {
             if (event.currentTarget.type == 'checkbox') dataType = DATA_TYPE.BOOLEAN;
             if (event.currentTarget.type == 'number') dataType = DATA_TYPE.NUMBER;
 
-            let newValue = event.currentTarget.type === 'checkbox' ? event.currentTarget.checked : event.detail.value;
+            let newValue = event.currentTarget.type === 'checkbox' ? event.currentTarget.checked : event.currentTarget.value;
             this.dispatchFlowValueChangeEvent(event.currentTarget.name, newValue, dataType);
         }
     }
