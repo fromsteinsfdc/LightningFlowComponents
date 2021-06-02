@@ -5,71 +5,37 @@
             class="slds-p-around_none slds-m-around_none">
             <!-- BUTTONS -->
             <lightning-accordion-section label="Buttons" name="buttons" class="slds-p-around_none slds-m-around_none">
-                <!-- <div class="dragndropSection">
-                    <template for:each={rows} for:item="row" for:index="index">
-                        <c-dragndrop-dropzone name="test1" index={index} key={row} list={rows} ondropzonedrop={handleDropzoneDrop}></c-dragndrop-dropzone>
-                        <div class="slds-box slds-p-around_none" key={row}>
-                            <c-dragndrop-row index={index} name="test1">
-                                <div class="slds-grid slds-p-around_small">
-                                    <div class="slds-col slds-size_2-of-3">{row}</div>
-                                    <div class="slds-col slds-size_1-of-3">
-                                        <lightning-button label="Useless button"></lightning-button>
-                                    </div>
-                                </div>
-                            </c-dragndrop-row>
-                        </div>
-                    </template>
-                    <c-dragndrop-dropzone name="test1" index={rows.length} list={rows} ondropzonedrop={handleDropzoneDrop}></c-dragndrop-dropzone>
-                </div> -->
-
                 <article>
-                    <!-- <div class="dragdropContainer" ondrop={handleContainerDrop}> -->
                     <div class="dragndropContainer">
                         <template for:each={buttons} for:item="button" for:index="index">
                             <c-dragndrop-dropzone list={buttons} index={index} key={button}
                                 ondropzonedrop={handleDropzoneDrop}></c-dragndrop-dropzone>
-
-                            <!-- <div class="dropzone" data-index={index} key={button.value}
-                                ondragover={handleDropzoneDragOver} ondragleave={handleDragLeave}></div>
-                            <div class="slds-grid buttonContainer slds-p-around_xx-small" key={button.value}
-                                data-index={index} ondragover={handleRowContainerDragOver}
-                                ondragleave={handleDragLeave}> -->
-                            <div class="slds-grid slds-box buttonContainer slds-p-around_xx-small" key={button.value}
-                                data-index={index}>
-
-                                <c-dragndrop-row index={index}>
-
-                                    <!-- <div>
-                                        <lightning-icon icon-name="utility:drag_and_drop" class="dragHandle"
-                                            draggable="true" data-index={index} ondragstart={handleDragStart}>
-                                        </lightning-icon>
-                                    </div> -->
-                                    <div class="slds-col">
-                                        <lightning-button label={button.label} data-value={button.value}
-                                            data-index={index} variant={button.variant} icon-name={button.iconName}
-                                            icon-position={button.iconPosition} onclick={handleButtonOpenClick}>
-                                        </lightning-button>
-                                        <div class="slds-text-body_small">
-                                            Value: {button.value}
+                            <div key={button.value} class="buttonContainer slds-p-around_xx-small">
+                                <c-dragndrop-row index={index} icon-alignment="start">
+                                    <div class="slds-grid">
+                                        <div class="slds-col">
+                                            <lightning-button label={button.label} data-value={button.value}
+                                                data-index={index} variant={button.variant} icon-name={button.iconName}
+                                                icon-position={button.iconPosition} onclick={handleButtonOpenClick}>
+                                            </lightning-button>
+                                            <div class="slds-text-body_small">
+                                                Value: {button.value}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="slds-p-around_x-small buttonRowActionsContainer">
-                                        <lightning-icon icon-name="utility:edit"
-                                            class="buttonAction slds-p-around_xx-small" size="xx-small"
-                                            data-index={index} onclick={handleButtonOpenClick}>
-                                        </lightning-icon>
-                                        <lightning-icon icon-name="utility:delete"
-                                            class="buttonAction slds-p-around_xx-small" size="xx-small"
-                                            data-index={index} onclick={handleButtonDeleteClick}></lightning-icon>
+                                        <div class="slds-p-around_x-small buttonRowActionsContainer">
+                                            <lightning-icon icon-name="utility:edit"
+                                                class="buttonAction slds-p-around_xx-small" size="xx-small"
+                                                data-index={index} onclick={handleButtonOpenClick}>
+                                            </lightning-icon>
+                                            <lightning-icon icon-name="utility:delete"
+                                                class="buttonAction slds-p-around_xx-small" size="xx-small"
+                                                data-index={index} onclick={handleButtonDeleteClick}></lightning-icon>
+                                        </div>
                                     </div>
                                 </c-dragndrop-row>
                             </div>
                         </template>
-                        <!-- <div class="dropzone" data-index={buttons.length} ondragover={handleDropzoneDragOver}
-                            ondragleave={handleDragLeave}></div> -->
-                        <c-dragndrop-dropzone list={buttons} index={buttons.length} ondropzonedrop={handleDropzoneDrop}>
-                        </c-dragndrop-dropzone>
-
+                        <c-dragndrop-dropzone list={buttons} index={buttons.length} ondropzonedrop={handleDropzoneDrop}></c-dragndrop-dropzone>
 
                         <div class="buttonBarActions">
                             <template if:false={newButtonDisabled}>
