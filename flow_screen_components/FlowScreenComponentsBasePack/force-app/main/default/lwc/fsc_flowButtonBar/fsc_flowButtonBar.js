@@ -3,11 +3,11 @@ import { FlowAttributeChangeEvent, FlowNavigationNextEvent, FlowNavigationBackEv
 
 const VERTICAL = 'vertical';
 
-const ALIGNMENTS = [
-    { input: 'left', value: 'slds-float_left', default: true },
-    { input: 'center', value: 'slds-align_absolute-center' },
-    { input: 'right', value: 'slds-float_right' }
-];
+// const ALIGNMENTS = [
+//     { input: 'left', value: 'slds-float_left', default: true },
+//     { input: 'center', value: 'slds-align_absolute-center' },
+//     { input: 'right', value: 'slds-float_right' }
+// ];
 
 const ALIGNMENTS2 = {
     LEFT: { label: 'left', value: 'slds-float_left', default: true },
@@ -36,6 +36,7 @@ export default class FlowButtonBar extends LightningElement {
     @api alignment;
     @api orientation;    
     @api showLines;
+    @api showOnHoverOnly;
 
     // 'Selection mode'-oriented properties
     @api label;
@@ -43,6 +44,8 @@ export default class FlowButtonBar extends LightningElement {
     @api multiselect = '';
     @api required = '';
     @api errorMessage;
+
+    @api listviewButtonLabel = 'Select';
 
     @api previewMode;   // Reserved for future use
 
@@ -78,6 +81,27 @@ export default class FlowButtonBar extends LightningElement {
     _options = [];
 
     @api
+    get records() {
+        return this._records;
+    }
+    set records(records) {
+        this._records = records;
+        let buttons = [];
+        for (let opp of this.records) {
+            let button = {
+                label: opp.Name,
+                value: opp.Id,
+                record: opp,
+                // descriptionText: opp.Name +' - '+ opp.Amount +' - '+ opp.CloseDate,            
+                recordFields: [opp.Amount, opp.CloseDate]
+            }
+            buttons.push(button);
+        }
+        this.buttons = buttons;
+    }
+    _records = [];
+
+    @api
     get actionMode() {
         return this._actionMode;
     }
@@ -108,23 +132,6 @@ export default class FlowButtonBar extends LightningElement {
         this.updateSelected();
     }
     _values = [];    
-
-
-
-
-    /* Replaced by value and values
-    @api
-    get selectedValue() {
-        return this._selectedValue;
-    }
-    set selectedValue(value) {
-        this._selectedValue = value;
-        this.selectedButton = this.buttons.find(el => el.value == value) || {};
-        this.toggleButtons();
-    }
-    */
-
-
 
     /* PRIVATE VARIABLES */
     // @track _selectedValue;
@@ -159,7 +166,9 @@ export default class FlowButtonBar extends LightningElement {
         if (this.rendered) 
             return;
         this.rendered = true;
+        // this.showOnHoverOnly = true;
         this.updateSelected();
+
     }
 
     /* EVENT HANDLERS */
@@ -203,10 +212,26 @@ export default class FlowButtonBar extends LightningElement {
                 button.variant = this.values.includes(button.value) ? VARIANTS.SELECTED : VARIANTS.UNSELECTED;
             }
         }
+
+        console.log('isVertical = '+ this.isVertical, '|', 'showOnHoverOnly = '+ this.showOnHoverOnly);
+        if (this.isVertical && this.showOnHoverOnly) {  
+            for (let row of this.template.querySelectorAll('.rowContainer')) {
+                // row.classList.add('hoverOnly');
+                //button.label = this.label;
+            }
+          
+            for (let button of this.template.querySelectorAll('.rowContainer lightning-button')) {
+                button.classList.add('hoverOnly');
+                // button.label = this.label;
+                button.label = this.listviewButtonLabel;
+            }
+        }
     }
 
     navigateFlow() {
-        if (this.value && this.value.toLowerCase() === 'previous' && this.availableActions.find(action => action === 'PREVIOUS')) {
+        console.log('in navigateFlow, this.value = '+ this.value, 'actions = '+ JSON.stringify(this.availableActions));
+
+        if (this.value && this.value.toLowerCase() === 'previous' && this.availableActions.find(action => action === 'BACK')) {
             this.dispatchEvent(new FlowNavigationBackEvent());
         } else {
             if (this.availableActions.find(action => action === 'FINISH')) {

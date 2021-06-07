@@ -47,13 +47,33 @@
         <template if:true={isVertical}>
             <template for:each={buttons} for:item="button" for:index="index">
                 <div class="rowContainer slds-box slds-grid slds-wrap slds-grid_vertical-stretch" key={button.label}>
-                    <div class="slds-col slds-size_1-of-1 slds-large-size_10-of-12 slds-shrink-none slds-p-right_small">
-                        {button.descriptionText}
-                    </div>
-                    <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-12 slds-align_absolute-center slds-shrink-none">
+                    <template if:true={button.descriptionText}>
+                        <div
+                            class="slds-col slds-size_1-of-1 slds-large-size_10-of-12 slds-shrink-none slds-p-right_small">
+                            {button.descriptionText}
+                        </div>
+                    </template>
+                    <template if:true={button.record}>
+                        <div class="slds-media slds-col slds-size_1-of-1 slds-large-size_10-of-12">
+                            <div class="slds-media__figure">
+                                <lightning-avatar fallback-icon-name="standard:opportunity"></lightning-avatar>
+                            </div>
+                            <div class="slds-media__body">
+                                <h3 class="slds-text-heading_small">{button.label}</h3>
+                                <template for:each={button.recordFields} for:item="recordField">
+                                    <div key={button.value}>
+                                        {recordField}
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div
+                        class="slds-col slds-size_1-of-1 slds-large-size_2-of-12 slds-align_absolute-center">
                         <lightning-button label={button.label} variant={button.variant} icon-name={button.iconName}
                             icon-position={button.iconPosition} key={button.value} value={button.value}
-                            data-index={index} onclick={handleButtonClick}>
+                            data-index={index} onclick={handleButtonClick} class="slds-p-around_xxx-small"> 
                         </lightning-button>
                     </div>
                 </div>

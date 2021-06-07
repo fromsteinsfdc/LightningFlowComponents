@@ -1,3 +1,23 @@
 .notToggle lightning-button + lightning-button {
     padding-left: 0.25em;
 }
+
+/* .hoverOnly:not(:hover) {
+    opacity: 0;
+    transition: 0.25s;
+} */
+
+.rowContainer:not(:hover) .hoverOnly {
+    opacity: 0;
+    /* transition: 0.1s; */
+}
+
+.rowContainer:hover {
+    background-color: #EEEEEE; 
+}
+
+/* :not(.rowContainer:hover .hoverOnly) {
+    opacity: 0;
+    transition: 0.25s;
+} */
+/* .rowContainer .hoverOnly { }*/
