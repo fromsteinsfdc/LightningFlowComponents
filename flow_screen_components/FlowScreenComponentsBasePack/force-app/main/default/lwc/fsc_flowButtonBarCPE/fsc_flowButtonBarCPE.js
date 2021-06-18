@@ -99,7 +99,7 @@ export default class FlowButtonBarCPE extends LightningElement {
         actionMode: { value: this.actionModes.default.value, valueDataType: DATA_TYPE.STRING, isCollection: false, label: 'Action mode' },
         required: { value: this.yesNo.default.value, valueDataType: DATA_TYPE.STRING, isCollection: false, label: 'Required' },
         multiselect: { value: this.yesNo.default.value, valueDataType: DATA_TYPE.STRING, isCollection: false, label: 'Multi-select' },
-
+        defaultValue: { value: null, valueDataType: DATA_TYPE.STRING, isCollection: false, label: 'Default value' }
 
 
         // groupAsToggle: { value: null, valueDataType: null, isCollection: false, label: 'Group as toggle' },
@@ -152,7 +152,7 @@ export default class FlowButtonBarCPE extends LightningElement {
     }
 
     dispatchFlowValueChangeEvent(id, newValue, newValueDataType) {
-        // console.log('in CPE dispatch to flow: ', id, newValue, newValueDataType);
+        console.log('in CPE dispatch to flow: ', id, newValue, newValueDataType);
         const valueChangedEvent = new CustomEvent(FLOW_EVENT_TYPE.CHANGE, {
             bubbles: true,
             cancelable: false,
@@ -248,6 +248,12 @@ export default class FlowButtonBarCPE extends LightningElement {
 
     get selectedButtonVariantLabel() {
         return this.variants.findFromValue(this.selectedButton.variant).label;
+    }
+
+    get defaultValueOptions() {
+        let noDefault = { label: '--No default option--', value: null };
+        // console.log('defaultValueOptions: '+ JSON.stringify([noDefault, ...this.buttons]));
+        return [noDefault, ...this.buttons];
     }
 
     /* LIFECYCLE HOOKS */

@@ -44,6 +44,7 @@ export default class FlowButtonBar extends LightningElement {
     @api multiselect = '';
     @api required = '';
     @api errorMessage;
+    @api defaultValue;
 
     @api listviewButtonLabel = 'Select';
 
@@ -131,7 +132,7 @@ export default class FlowButtonBar extends LightningElement {
         this._values = values ? [...values] : []; // using spread operator to create a shallow clone of the array for mutability
         this.updateSelected();
     }
-    _values = [];    
+    _values = [];
 
     /* PRIVATE VARIABLES */
     // @track _selectedValue;
@@ -167,6 +168,9 @@ export default class FlowButtonBar extends LightningElement {
             return;
         this.rendered = true;
         // this.showOnHoverOnly = true;
+        if (!this.value && this.defaultValue) {
+            this.value = this.defaultValue;
+        }
         this.updateSelected();
 
     }
@@ -213,7 +217,7 @@ export default class FlowButtonBar extends LightningElement {
             }
         }
 
-        console.log('isVertical = '+ this.isVertical, '|', 'showOnHoverOnly = '+ this.showOnHoverOnly);
+        // console.log('isVertical = '+ this.isVertical, '|', 'showOnHoverOnly = '+ this.showOnHoverOnly);
         if (this.isVertical && this.showOnHoverOnly) {  
             for (let row of this.template.querySelectorAll('.rowContainer')) {
                 // row.classList.add('hoverOnly');
@@ -229,7 +233,7 @@ export default class FlowButtonBar extends LightningElement {
     }
 
     navigateFlow() {
-        console.log('in navigateFlow, this.value = '+ this.value, 'actions = '+ JSON.stringify(this.availableActions));
+        // console.log('in navigateFlow, this.value = '+ this.value, 'actions = '+ JSON.stringify(this.availableActions));
 
         if (this.value && this.value.toLowerCase() === 'previous' && this.availableActions.find(action => action === 'BACK')) {
             this.dispatchEvent(new FlowNavigationBackEvent());
