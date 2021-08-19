@@ -28,8 +28,9 @@ export default class FlexcardCPE extends LightningElement {
         icon: { value: null, valueDataType: null, isCollection: false, label: 'Icon name for example standard:account' },
         records: { value: null, valueDataType: null, isCollection: true, label: 'Record Collection', helpText: 'Record collection variable to be displayed in the cards' },
         visibleFieldNames: { value: null, valueDataType: null, isCollection: false, label: 'Show which fields?' },
-        fields: { value: null, valueDataType: null, isCollection: false, label: 'Show which fields?', serialized: true },
-        visibleFlowNames: { value: null, valueDataType: null, isCollection: false, label: 'Show which flow?' },
+        fields: { value: null, valueDataType: null, isCollection: true, label: 'Show which fields?', serialized: true },
+        visibleFlowNames: { value: null, valueDataType: null, isCollection: false, label: 'Show which flow?' },        
+        flows: { value: null, valueDataType: null, isCollection: true, label: 'Show which flow?', serialized: true },
         cardSizeString: { value: null, valueDataType: DATA_TYPE.NUMBER, isCollection: false, label: 'Card Size', helpText: 'This is the size of the card in Pixels' },
         isClickable: { value: null, valueDataType: null, isCollection: false, label: 'Clickable Cards?', helpText: 'When checked cards are clickable and recordId passes to value' },
         headerStyle: { value: null, valueDataType: null, isCollection: false, label: 'Style attribute for the card headers ', helpText: 'ie. background-color:red;' },
@@ -71,7 +72,7 @@ export default class FlexcardCPE extends LightningElement {
             for (let input of this.template.querySelectorAll(inputType)) {
                 if (!input.reportValidity()) {
                     validity.push({
-                        key: input.name || 'Error_'+ validity.length,
+                        key: input.name || ('Error_'+ validity.length),
                         errorString: 'This field has an error (missing or invalid entry)',
                     });            
                 }
@@ -109,7 +110,7 @@ export default class FlexcardCPE extends LightningElement {
 
     initializeTypeMappings() {
         this._typeMappings.forEach((typeMapping) => {
-            console.log(JSON.stringify(typeMapping));
+            // console.log(JSON.stringify(typeMapping));
             if (typeMapping.name && typeMapping.value) {
                 this.typeValue = typeMapping.value;
             }
@@ -118,8 +119,8 @@ export default class FlexcardCPE extends LightningElement {
 
     handleObjectChange(event) {
         if (event.target && event.detail) {
-            console.log('handling a dynamic type mapping');
-            console.log('event is ' + JSON.stringify(event));
+            // console.log('handling a dynamic type mapping');
+            // console.log('event is ' + JSON.stringify(event));
             let typeValue = event.detail.objectType;
             const typeName = 'T';
             const dynamicTypeMapping = new CustomEvent('configuration_editor_generic_type_mapping_changed', {
@@ -146,14 +147,12 @@ export default class FlexcardCPE extends LightningElement {
         if (event.target && event.detail) {
             let changedAttribute = event.target.name;
             let newType = event.detail.newValueDataType;
-            console.log('about to dispatch change in '+ changedAttribute +', data type is '+ newType);
             let newValue = event.detail.newValue;
             this.dispatchFlowValueChangeEvent(changedAttribute, newValue, newType);
         }
     }
 
     handleValueChange(event) {
-        console.log('in handleValueChange');
         if (event.detail && event.currentTarget.name) {
             let dataType = DATA_TYPE.STRING;
             if (event.currentTarget.type == 'checkbox') dataType = DATA_TYPE.BOOLEAN;
@@ -166,7 +165,7 @@ export default class FlexcardCPE extends LightningElement {
 
     handleCheckboxChange(event) {
         if (event.target && event.detail) {
-            let changedAttribute = event.target.name.replace(defaults.inputAttributePrefix, '');
+            let changedAttribute = event.target.name;
             this.dispatchFlowValueChangeEvent(changedAttribute, event.detail.newValue, event.detail.newValueDataType);
             // this.dispatchFlowValueChangeEvent('cb_' + changedAttribute, event.detail.newStringValue, 'String');
         }
@@ -177,7 +176,21 @@ export default class FlexcardCPE extends LightningElement {
         this.dispatchFlowValueChangeEvent('icon', event.detail);
     }
 
-    
+    handleFlowSelect(event) {
+        let selectedFlow = event.detail;
+        let currentFlows = this.inputValues.flows.value || [];
+        if (!currentFlows.some(flow => selectedFlow.value === flow.value)) {
+            currentFlows.push(selectedFlow);
+            this.dispatchFlowValueChangeEvent('flows', currentFlows);
+        }
+        event.currentTarget.selectedFlowApiName = null;
+    }
+
+    handleFlowRemove(event) {
+        this.inputValues.flows.value.splice(event.currentTarget.dataset.index, 1);
+        this.dispatchFlowValueChangeEvent('flows', this.inputValues.flows.value);
+
+    }    
 
     updateRecordVariablesComboboxOptions(objectType) {
         const variables = this._flowVariables.filter(

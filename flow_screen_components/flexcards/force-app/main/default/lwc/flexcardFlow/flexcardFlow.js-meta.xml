@@ -25,6 +25,7 @@
             <property name="transitionOnClick" label="Transition on Click" type="Boolean" role="inputOnly" default="false" description="If marked as true will transition flow to next screen on card click"/>
 
             <property name="fields" label="Visible Field Names" type="String" default="Id" required="true" description="Show which fields?"/>
+            <property name="flows" label="Visible Flow Names" type="String" description="Show which fields?"/>
 
         </targetConfig>
     </targetConfigs>

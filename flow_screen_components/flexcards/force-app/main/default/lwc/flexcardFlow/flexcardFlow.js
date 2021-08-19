@@ -34,22 +34,28 @@ export default class FlexcardFlow extends LightningElement {
         return this._fields;
     }
     set fields(value) {
-        console.log('setting fields to '+ value);
         this._fields = value;
         this.visibleFieldNames = JSON.parse(value).map(field => field.name).join();
-        console.log('setting visibleFieldNames to ' + this.visibleFieldNames);
     }
     @track _fields;
+
+    @api
+    get flows() {
+        return this._flows;
+    }
+    set flows(value) {
+        this._flows = value;
+        this.flows = JSON.parse(value).map(flow => flow.value).join();
+    }
+    @track _flows;
 
     @api
     get cardSizeString() {
         return this.cardSize;
     }
     set cardSizeString(value) {
-        console.log('in cardsizestring, value = '+ value);
         if (!Number.isNaN(value))
             this.cardSize = value;
-        console.log('done setting cardsizestring');
     }
 
     curRecord;

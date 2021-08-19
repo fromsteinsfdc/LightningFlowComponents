@@ -51,22 +51,31 @@
 
     <c-fsc_flow-banner banner-color="#4C6E96" banner-label="Flex Card Actions"></c-fsc_flow-banner>
 
-    <c-fsc_flow-combobox name="select_VisibleFlowNames" label={inputValues.visibleFlowNames.label}
+    <!-- <c-fsc_flow-combobox name="visibleFlowNames" label={inputValues.visibleFlowNames.label}
         value={inputValues.visibleFlowNames.value} value-type={inputValues.visibleFlowNames.valueDataType}
         builder-context-filter-type="String"
         builder-context-filter-collection-boolean={inputValues.visibleFlowNames.isCollection}
-        builder-context={_builderContext} onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
+        builder-context={_builderContext} onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox> -->
 
-    <c-fsc_flow-checkbox name="select_IsClickable" label={inputValues.isClickable.label}
+    <c-flow-picker-f-s-c label={inputValues.flows.label} show-active-flows-only onflowselect={handleFlowSelect}></c-flow-picker-f-s-c>
+    <template for:each={inputValues.flows.value} for:item="flow" for:index="index">
+        <lightning-pill label={flow.label} data-index={index} onremove={handleFlowRemove}
+            key={flow.value} class="slds-p-top_xx-small">
+        </lightning-pill>
+    </template>
+
+
+    <c-fsc_flow-checkbox name="isClickable" label={inputValues.isClickable.label}
         checked={inputValues.isClickable.value} field-level-help={inputValues.isClickable.helpText}
         oncheckboxchanged={handleCheckboxChange}></c-fsc_flow-checkbox>
 
-    <c-fsc_flow-checkbox name="select_AllowMultiSelect" label={inputValues.allowMultiSelect.label}
-        checked={inputValues.allowMultiSelect.value} field-level-help={inputValues.allowMultiSelect.helpText}
-        oncheckboxchanged={handleCheckboxChange}></c-fsc_flow-checkbox>
+    <template if:true={inputValues.isClickable.value}>
+        <c-fsc_flow-checkbox name="allowMultiSelect" label={inputValues.allowMultiSelect.label}
+            checked={inputValues.allowMultiSelect.value} field-level-help={inputValues.allowMultiSelect.helpText}
+            oncheckboxchanged={handleCheckboxChange}></c-fsc_flow-checkbox>
 
-    <c-fsc_flow-checkbox name="select_TransitionOnClick" label={inputValues.transitionOnClick.label}
-        checked={inputValues.transitionOnClick.value} field-level-help={inputValues.transitionOnClick.helpText}
-        oncheckboxchanged={handleCheckboxChange}></c-fsc_flow-checkbox>
-
+        <c-fsc_flow-checkbox name="transitionOnClick" label={inputValues.transitionOnClick.label}
+            checked={inputValues.transitionOnClick.value} field-level-help={inputValues.transitionOnClick.helpText}
+            oncheckboxchanged={handleCheckboxChange}></c-fsc_flow-checkbox>
+    </template>
 </template>
