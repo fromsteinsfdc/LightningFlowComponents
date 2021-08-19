@@ -13,7 +13,6 @@ export default class FlowCombobox extends LightningElement {
     @api name;
     @api label;
     @api required = false;
-    @api builderContextFilterType;
     @api builderContextFilterCollectionBoolean;
     @api maxWidth;
     @api autocomplete = 'off';
@@ -28,12 +27,15 @@ export default class FlowCombobox extends LightningElement {
     @track isDataSelected = false;
     @track _selectedObjectType;
     @track _selectedFieldPath;
+    @track _inputValue;
     @track hasError = false;
     isMenuOpen = false;
     isDataModified = false;
     selfEvent = false;
     key = 0;
     _builderContext;
+    _builderContextFilterType;
+
     _automaticOutputVariables;
     labels = {
         noDataAvailable: 'No matching mergefields or variables are available ',
@@ -165,6 +167,31 @@ export default class FlowCombobox extends LightningElement {
             this.determineSelectedType();
         }
     }
+
+    @api get inputValue() {
+        return this._inputValue;
+    }
+
+    set inputValue(value) {
+        this._inputValue = value;
+        if (value) {
+            this.label = value.label;
+            this.value = value.value;
+            this.valueType = value.valueDataType;
+            this.builderContextFilterCollectionBoolean = value.isCollection;
+            this.fieldLevelHelp = value.helpText;
+        }
+    }
+
+    @api get builderContextFilterType() {
+        return this._builderContextFilterType;
+    }
+
+    set builderContextFilterType(value) {
+        this._builderContextFilterType = value;
+        this.processOptions();
+    }
+
 
     @api get automaticOutputVariables () {
         return this._automaticOutputVariables;
@@ -729,6 +756,8 @@ export default class FlowCombobox extends LightningElement {
 
     @api
     reportValidity() {
+        if (this.template.querySelector('.value-input') && !this.template.querySelector('.value-input').reportValidity())
+            return false;
         return !this.hasError;
     }
 

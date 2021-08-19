@@ -3,13 +3,12 @@
 
     <c-fsc_pick-object-and-field object-label={inputValues.objectAPIName.label} name="objectAPIName"
         object-type={inputValues.objectAPIName.value} is-allow-all=true hide-field-picklist=true
-        onfieldselected={handleObjectChange}>
+        onfieldselected={handleObjectChange} required>
     </c-fsc_pick-object-and-field>
 
-    <template if:true={inputValues.objectAPIName.value}>
-        <c-field-selector name="fields" object-name={inputValues.objectAPIName.value} public-style="width:100%"
-            onfieldupdate={handleValueChange} selected-fields={inputValues.fields.value}></c-field-selector>
-    </template>
+
+    <c-field-selector name="fields" object-name={inputValues.objectAPIName.value} public-style="width:100%"
+        onfieldupdate={handleValueChange} selected-fields={inputValues.fields.value} required></c-field-selector>
 
     <!-- <c-fsc_flow-combobox
     name="select_Fields"
@@ -22,35 +21,31 @@
     onvaluechanged={handleFlowComboboxValueChange}
     ></c-fsc_flow-combobox> -->
 
-    <c-fsc_flow-combobox name="select_Records" label={inputValues.records.label} value={inputValues.records.value}
+    <!-- <c-fsc_flow-combobox name="select_Records" label={inputValues.records.label} value={inputValues.records.value}
         value-type={inputValues.records.valueDataType} builder-context-filter-type="String"
         builder-context-filter-collection-boolean={inputValues.records.isCollection} builder-context={_builderContext}
-        onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
+        onvaluechanged={handleFlowComboboxValueChange} required></c-fsc_flow-combobox> -->
 
-    <c-fsc_flow-combobox name="select_Values" label={inputValues.value.label} value={inputValues.value.value}
-        value-type={inputValues.value.valueDataType} builder-context-filter-type="String"
-        builder-context-filter-collection-boolean={inputValues.value.isCollection} builder-context={_builderContext}
+    <c-fsc_flow-combobox name="records" input-value={inputValues.records}
+        builder-context-filter-type={inputValues.objectAPIName.value} onvaluechanged={handleFlowComboboxValueChange} required=true>
+    </c-fsc_flow-combobox>
+
+    <c-fsc_flow-combobox name="value" input-value={inputValues.value} 
+        builder-context-filter-type="String"
         onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
 
     <c-fsc_flow-banner banner-color="#4C6E96" banner-label="Component Styling"></c-fsc_flow-banner>
 
-    <c-fsc_flow-combobox name="select_CardSize" label={inputValues.cardSize.label} value={inputValues.cardSize.value}
-        value-type={inputValues.cardSize.valueDataType} builder-context-filter-type="String"
-        builder-context-filter-collection-boolean={inputValues.cardSize.isCollection} builder-context={_builderContext}
+    <c-fsc_flow-combobox name="cardSizeString" input-value={inputValues.cardSizeString} builder-context-filter-type="String"
         onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
 
-    <c-fsc_flow-combobox name="select_HeaderStyle" label={inputValues.headerStyle.label}
-        value={inputValues.headerStyle.value} value-type={inputValues.headerStyle.valueDataType}
-        field-level-help={inputValues.headerStyle.helpText} builder-context-filter-type="String"
-        builder-context-filter-collection-boolean={inputValues.headerStyle.isCollection}
-        builder-context={_builderContext} onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
+    <c-fsc_flow-combobox name="headerStyle" input-value={inputValues.headerStyle} 
+        builder-context-filter-type="String" onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
 
-    <c-fsc_flow-combobox name="select_Labels" label={inputValues.label.label} value={inputValues.label.value}
-        value-type={inputValues.label.valueDataType} builder-context-filter-type="String"
-        builder-context-filter-collection-boolean={inputValues.label.isCollection} builder-context={_builderContext}
-        onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
+    <c-fsc_flow-combobox name="label" input-value={inputValues.label} 
+        builder-context-filter-type="String" onvaluechanged={handleFlowComboboxValueChange}></c-fsc_flow-combobox>
 
-    <c-fsc_pick-icon name="select_Icons" mode="combobox" oniconselection={handlePickIcon}
+    <c-fsc_pick-icon name="icons" mode="combobox" oniconselection={handlePickIcon}
         icon-name={inputValues.icon.value}>
     </c-fsc_pick-icon>
 

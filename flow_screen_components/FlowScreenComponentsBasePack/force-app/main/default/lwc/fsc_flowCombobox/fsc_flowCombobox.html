@@ -10,7 +10,9 @@
                                  role="none" style="height: 55px;">
                                 <template if:false={displayPill}>
                                     <div onkeyup={handleSearchKeyUp}>
-                                        <label class="slds-form-element__label custom-width-full" onclick={toggleMenu}>{label}
+                                        <label class="slds-form-element__label custom-width-full" onclick={toggleMenu}>
+                                            <template if:true={required}><span class="slds-text-color_error" title="Required">* </span></template>
+                                            {label}
                                             <lightning-helptext if:true={fieldLevelHelp} class="slds-m-left_xxx-small" content={fieldLevelHelp}></lightning-helptext>
                                         </label>
                                         <lightning-input

@@ -15,6 +15,7 @@
             <property name="visibleFieldNames" label="Visible Field Names" type="String" default="Id" description="Show which fields?"/>
             <property name="visibleFlowNames" label="Visible Flow Names" type="String" description="Show which flow?"/>
             <property name="cardSize" role="inputOnly" label="Box Size" type="Integer" default="300" description="The size of the box in pixels. The box is a square."/>
+            <property name="cardSizeString" role="inputOnly" label="Box Size" type="String" default="300" description="The size of the box in pixels. The box is a square."/>
             <property name="isClickable" role="inputOnly" label="isClickable" type="Boolean" default="false" description="Set as true if you wish to select individual cards for action further downstream in flow default is false"/>
             <property name="headerStyle" label="Header Style" type="String" description="Add your own style attribute to the card headers ie. background-color:red;"/>
             <property name="allowMultiSelect" label="Allow Multi-Select" type="Boolean" default="false" description="Allow for multiselect of cards when enabled checkboxes appear on cards and adds selected cards to collection"/>

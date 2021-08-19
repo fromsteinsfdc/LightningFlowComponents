@@ -11,19 +11,26 @@ const FLOW_EVENT_TYPE = {
     CHANGE: 'configuration_editor_input_value_changed'
 }
 
+const VALIDATEABLE_INPUTS = ['c-fsc_flow-combobox', 'c-fsc_pick-object-and-field', 'c-field-selector'];
+
 export default class FlexcardCPE extends LightningElement {
-    _builderContext;
-    _values;
+    @api automaticOutputVariables;
+    typeValue;
+    _builderContext = {};
+    _values = [];
+    _flowVariables = [];
+    _typeMappings = [];
+    rendered;
 
 
     @track inputValues = {
         value: { value: null, valueDataType: null, isCollection: false, label: 'Preselected recordId' },
         icon: { value: null, valueDataType: null, isCollection: false, label: 'Icon name for example standard:account' },
-        records: { value: null, valueDataType: null, isCollection: true, label: 'Record Collection' },
+        records: { value: null, valueDataType: null, isCollection: true, label: 'Record Collection', helpText: 'Record collection variable to be displayed in the cards' },
         visibleFieldNames: { value: null, valueDataType: null, isCollection: false, label: 'Show which fields?' },
         fields: { value: null, valueDataType: null, isCollection: false, label: 'Show which fields?', serialized: true },
         visibleFlowNames: { value: null, valueDataType: null, isCollection: false, label: 'Show which flow?' },
-        cardSize: { value: null, valueDataType: null, isCollection: false, label: 'Card Size', helpText: 'This is the size of the card in Pixels' },
+        cardSizeString: { value: null, valueDataType: DATA_TYPE.NUMBER, isCollection: false, label: 'Card Size', helpText: 'This is the size of the card in Pixels' },
         isClickable: { value: null, valueDataType: null, isCollection: false, label: 'Clickable Cards?', helpText: 'When checked cards are clickable and recordId passes to value' },
         headerStyle: { value: null, valueDataType: null, isCollection: false, label: 'Style attribute for the card headers ', helpText: 'ie. background-color:red;' },
         allowMultiSelect: { value: null, valueDataType: null, isCollection: false, label: 'Allow MultiSelect?', helpText: 'When checked checkboxes appear on cards and adds selected cards recordId to collection' },
@@ -45,19 +52,52 @@ export default class FlexcardCPE extends LightningElement {
     }
 
     set inputVariables(value) {
-
         this._values = value;
         this.initializeValues();
     }
+
+    @api get genericTypeMappings() {
+        return this._genericTypeMappings;
+    }
+    set genericTypeMappings(value) {
+        this._typeMappings = value;
+        this.initializeTypeMappings();
+    }
+
+    @api
+    validate() {
+        let validity = [];
+        for (let inputType of VALIDATEABLE_INPUTS) {
+            for (let input of this.template.querySelectorAll(inputType)) {
+                if (!input.reportValidity()) {
+                    validity.push({
+                        key: input.name || 'Error_'+ validity.length,
+                        errorString: 'This field has an error (missing or invalid entry)',
+                    });            
+                }
+            }
+        }
+        return validity;
+    }
+
+    renderedCallback() {
+        if (!this.rendered) {
+            this.rendered = true;
+            for (let flowCombobox of this.template.querySelectorAll('c-fsc_flow-combobox')) {
+                flowCombobox.builderContext = this.builderContext;
+                flowCombobox.automaticOutputVariables = this.automaticOutputVariables;
+            }
+        }
+    }
+
 
     initializeValues(value) {
         if (this._values && this._values.length) {
             this._values.forEach(curInputParam => {
                 if (curInputParam.name && this.inputValues[curInputParam.name]) {
+                    // console.log('in initializeValues: '+ JSON.stringify(curInputParam));
                     if (this.inputValues[curInputParam.name].serialized) {
-                        console.log('parsing: '+ curInputParam.value);
                         this.inputValues[curInputParam.name].value = JSON.parse(curInputParam.value);
-                        console.log(this.inputValues[curInputParam.name].value);
                     } else {
                         this.inputValues[curInputParam.name].value = curInputParam.value;
                     }
@@ -67,15 +107,48 @@ export default class FlexcardCPE extends LightningElement {
         }
     }
 
+    initializeTypeMappings() {
+        this._typeMappings.forEach((typeMapping) => {
+            console.log(JSON.stringify(typeMapping));
+            if (typeMapping.name && typeMapping.value) {
+                this.typeValue = typeMapping.value;
+            }
+        });
+    }
+
     handleObjectChange(event) {
         if (event.target && event.detail) {
-            this.dispatchFlowValueChangeEvent(event.currentTarget.name, event.detail.objectType, DATA_TYPE.STRING);
+            console.log('handling a dynamic type mapping');
+            console.log('event is ' + JSON.stringify(event));
+            let typeValue = event.detail.objectType;
+            const typeName = 'T';
+            const dynamicTypeMapping = new CustomEvent('configuration_editor_generic_type_mapping_changed', {
+                composed: true,
+                cancelable: false,
+                bubbles: true,
+                detail: {
+                    typeName,
+                    typeValue,
+                }
+            });
+            this.dispatchEvent(dynamicTypeMapping);
+            if (this.inputValues.objectAPIName.value != typeValue) {
+                this.inputValues.objectAPIName.value = typeValue;
+                this.dispatchFlowValueChangeEvent(event.currentTarget.name, typeValue, 'String');
+            }
+    
+            // this.dispatchFlowValueChangeEvent(event.currentTarget.name, event.detail.objectType, DATA_TYPE.STRING);
         }
     }
 
+
     handleFlowComboboxValueChange(event) {
         if (event.target && event.detail) {
-            this.dispatchFlowValueChangeEvent(event.currentTarget.name, event.detail.value, DATA_TYPE.STRING);
+            let changedAttribute = event.target.name;
+            let newType = event.detail.newValueDataType;
+            console.log('about to dispatch change in '+ changedAttribute +', data type is '+ newType);
+            let newValue = event.detail.newValue;
+            this.dispatchFlowValueChangeEvent(changedAttribute, newValue, newType);
         }
     }
 
@@ -95,23 +168,35 @@ export default class FlexcardCPE extends LightningElement {
         if (event.target && event.detail) {
             let changedAttribute = event.target.name.replace(defaults.inputAttributePrefix, '');
             this.dispatchFlowValueChangeEvent(changedAttribute, event.detail.newValue, event.detail.newValueDataType);
-            this.dispatchFlowValueChangeEvent('cb_' + changedAttribute, event.detail.newStringValue, 'String');
+            // this.dispatchFlowValueChangeEvent('cb_' + changedAttribute, event.detail.newStringValue, 'String');
         }
     }
 
     handlePickIcon(event) {
-        let changedAttribute = 'icon';
-        this.inputValues[changedAttribute].value = event.detail;
-        this.dispatchFlowValueChangeEvent(changedAttribute, event.detail, 'String');
+        // this.inputValues[changedAttribute].value = event.detail;
+        this.dispatchFlowValueChangeEvent('icon', event.detail);
     }
 
-    dispatchFlowValueChangeEvent(id, newValue, dataType) {
+    
+
+    updateRecordVariablesComboboxOptions(objectType) {
+        const variables = this._flowVariables.filter(
+            (variable) => variable.objectType === objectType
+        );
+        let comboboxOptions = [];
+        variables.forEach((variable) => {
+            comboboxOptions.push({
+                label: variable.name,
+                value: "{!" + variable.name + "}"
+            });
+        });
+        return comboboxOptions;
+    }
+
+    dispatchFlowValueChangeEvent(id, newValue, dataType = DATA_TYPE.STRING) {
         console.log('in dispatchFlowValueChangeEvent: '+ id, newValue, dataType);
         if (this.inputValues[id] && this.inputValues[id].serialized) {
-            console.log('stringifying: '+ newValue);
             newValue = JSON.stringify(newValue);
-            console.log(newValue);
-
         }
         const valueChangedEvent = new CustomEvent(FLOW_EVENT_TYPE.CHANGE, {
             bubbles: true,
