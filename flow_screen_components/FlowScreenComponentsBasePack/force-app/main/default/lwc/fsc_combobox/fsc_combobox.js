@@ -3,9 +3,7 @@ import { LightningElement, api, track } from 'lwc';
 const CLASSES = {
     PREFIX: '.',
     DROPDOWN_TRIGGER: 'slds-dropdown-trigger',
-    IS_OPEN: 'slds-is-open',
-    OPTION_BASE: 'slds-media slds-listbox__option slds-listbox__option_entity',
-    OPTION_METADATA: 'slds-listbox__option_has-meta'
+    IS_OPEN: 'slds-is-open'
 }
 
 const LIGHTNING = {
@@ -16,17 +14,29 @@ export default class OptionSelector extends LightningElement {
     @api publicStyle;
     @api publicClass;
     @api label;
-    @api hidePills;
     @api name;
+    @api customSearchHandler;   // Custom function to be executed by handleSearchChange, passed in from a parent component.
     
     @api messageWhenValueMissing = 'Please select at least one option.';
-    @api placeholder;
+    @api iconSize = 'small'
+    @api placeholder = 'Select an option';
+    @api noMatchString = 'No matches found';
     @api required = false;
     @api disabled = false;
     @api allowMultiselect = false;
-    @api includeSublabelInFilter = false;   // If true, the 'sublabel' text of an option is included when determining if an option is a match for a given search text. Default is false.
-    @api excludeValueInFilter = false;  // If true, the 'value' text of an option is not included when determining if an option is a match for a given search text. Default is false.
+    @api hidePills = false; // If true, list of selected pills in multiselect mode will not be displayed (generally because a parent component wants to display them differently).
+    @api excludeSublabelInFilter = false;   // If true, the 'sublabel' text of an option is included when determining if an option is a match for a given search text.
+    @api includeValueInFilter = false;  // If true, the 'value' text of an option is not included when determining if an option is a match for a given search text.
     @api hideSelectedValues = false;    // Reserved for future use
+
+    @api
+    get debounceDelay() {
+        return this._debounceDelay;
+    }
+    set debounceDelay(delay) {
+        this._debounceDelay = parseInt(delay) || 0;
+    }
+    _debounceDelay = 0;
 
     @api 
     get options() {
@@ -82,15 +92,18 @@ export default class OptionSelector extends LightningElement {
         return this.inputElement.reportValidity();
     }
 
+    get valuesString() {
+        return JSON.stringify(this.values);
+    }
 
-    @track _selectedOptions = [];
+    // @track _selectedOptions = [];
     errorMessage;
     isLoading;
-    noMatchString = 'No matches found';
-
+    debounceTimer;    
 
     connectedCallback() {
-        console.log(JSON.stringify(this.options));
+        // console.log(JSON.stringify(this.options));
+        console.log('in combobox, debouncedelay = '+ this.debounceDelay, Number.isInteger(this.debounceDelay));
     }
 
     get dropdownTrigger() {
@@ -99,13 +112,6 @@ export default class OptionSelector extends LightningElement {
 
     get inputElement() {
         return this.template.querySelector(LIGHTNING.INPUT);
-    }
-
-    get searchLabelCounter() {
-        let label = this.label;
-        if (this.allowMultiselect)
-            label += ' (' + this.selectedOptions.length + ')';
-        return label;
     }
 
     get isInputDisabled() {
@@ -120,17 +126,12 @@ export default class OptionSelector extends LightningElement {
         return !this.allowMultiselect && this.value;
     }
 
-    get showPills() {
-        return this.allowMultiselect && !this.hidePills && this.selectedOptions.length;
+    get selectedValueClass() {
+        return 'slds-combobox__form-element slds-input-has-icon ' + (this.selectedOption.icon ? 'slds-input-has-icon_left-right' : 'slds-input-has-icon_right');
     }
 
-    get optionClass() {
-        return CLASSES.OPTION_BASE;
-        let classString = CLASSES.OPTION_BASE;
-        if (this.hasSublabels) {
-            classString += ' ' + CLASSES.OPTION_METADATA
-        }
-        return classString;
+    get showPills() {
+        return this.allowMultiselect && !this.hidePills && this.values.length;
     }
 
     /* ACTION FUNCTIONS */
@@ -143,9 +144,7 @@ export default class OptionSelector extends LightningElement {
     }
 
     filterOptions(searchText = '') {
-        console.log('in filterOptions, searchText = ' + searchText);
         searchText = searchText.toLowerCase();
-        console.log('lowercase searchtext = ' + searchText);
         for (let option of this.options) {
             // if (this.hideSelectedValues && this.values.includes(option.value)) {
             if (this.values.includes(option.value)) {
@@ -153,16 +152,15 @@ export default class OptionSelector extends LightningElement {
             }
             else {
                 if (option.label.toLowerCase().includes(searchText)
-                    || (!this.excludeValueInFilter && option.value.toLowerCase().includes(searchText))
-                    || (this.includeSublabelInFilter && option.sublabel && option.sublabel.toLowerCase().includes(searchText))) {
+                    || (this.includeValueInFilter && option.value.toLowerCase().includes(searchText))
+                    || (!this.excludeSublabelInFilter && option.sublabel && option.sublabel.toLowerCase().includes(searchText))) {
                     option.hidden = false;
+
                 } else {
                     option.hidden = true;
                 }
             }
         }
-        console.log('options after filtering = '+ JSON.stringify(this.options));
-        console.log('finished filterOptions');
     }
 
     dispatchOptions() {
@@ -178,20 +176,19 @@ export default class OptionSelector extends LightningElement {
                 selectedOption: this.selectedOption
             }
         }
-        this.dispatchEvent(new CustomEvent('change', {
-            detail: detail
-            // detail: {
-            //     value: this.value,
-            //     values: this.values,
-            //     selectedOption: this.selectedOption,
-            //     selectedOptions: this.selectedOptions
-            // }
-        }));
+        this.dispatchEvent(new CustomEvent('valuechange', { detail: detail }));
     }
 
     /* EVENT HANDLERS */
-    handleSearchChange() {
-        this.filterOptions(this.inputElement.value);
+    handleSearchChange(event) {        
+        // console.log('in handleSearchChange');
+        // console.log('customSearchHandler = '+ this.customSearchHandler);
+        // console.log(JSON.stringify(this.customSearchHandler));
+        this.debounce(
+            () => this.customSearchHandler ? this.customSearchHandler(this.inputElement.value) : this.filterOptions(this.inputElement.value),
+            // parseInt(this.debounceDelay, 10)
+            this.debounceDelay
+        );
     }
 
     handleSearchFocus(event) {
@@ -219,7 +216,6 @@ export default class OptionSelector extends LightningElement {
     }
 
     handleOptionUnselect(event) {
-        console.log('in handleOptionUnselect, '+ event.target.dataset.index);
         this.values.splice(event.target.dataset.index, 1);
         this.dispatchOptions();
     }
@@ -229,4 +225,9 @@ export default class OptionSelector extends LightningElement {
         this.dispatchOptions();
     }
 
+    /* UTILITY FUNCTIONS */
+    debounce(fn, wait) {
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(fn, wait);      
+    }
 }

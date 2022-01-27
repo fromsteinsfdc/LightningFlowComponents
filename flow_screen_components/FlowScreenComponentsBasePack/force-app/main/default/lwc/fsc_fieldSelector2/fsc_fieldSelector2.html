@@ -1,5 +1,4 @@
 <template>
-    <div class="slds-box slds-theme_default">
-        <c-fsc_combobox options={fields} label="Select Field" public-class="slds-p-around_x-small" required={required} allow-multiselect={allowMultiselect} onchange={handleComboboxChange}></c-fsc_combobox>
-    </div>
+    <c-fsc_combobox options={fields} label={label} public-class={publicClass} public-style={publicStyle}
+        required={required} allow-multiselect={allowMultiselect} onvaluechange={handleComboboxChange} icon-size="x-small"></c-fsc_combobox>
 </template>

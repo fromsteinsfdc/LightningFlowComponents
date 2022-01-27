@@ -1,0 +1,15 @@
+<template>
+    <lightning-card>
+        <!-- Standard fscCombobox -->
+        <c-fsc_combobox options={options} label="Search" required onvaluechange={handleComboboxChange}
+            public-class="slds-p-around_large">
+        </c-fsc_combobox>
+        
+        <!-- Field Selector combobox -->
+        <c-fsc_field-selector2 object-name="Account" public-class="slds-box" allow-multiselect></c-fsc_field-selector2>
+
+        <!-- Record Lookup combobox -->
+        <c-fsc_lookup object-name="Account" public-class="slds-box slds-theme_shade" fields-to-display="Name,BillingCity,Phone"
+            icon-name="standard:account"></c-fsc_lookup>
+    </lightning-card>
+</template>

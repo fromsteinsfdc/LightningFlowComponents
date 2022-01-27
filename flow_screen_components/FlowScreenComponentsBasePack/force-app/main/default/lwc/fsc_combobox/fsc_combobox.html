@@ -9,8 +9,10 @@
                     </label>
                     <div class="slds-combobox_container slds-has-selection">
                         <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click">
-                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
-                                role="none">
+                            <div class={selectedValueClass} role="none">
+                                <span class="slds-icon_container slds-combobox__input-entity-icon">
+                                    <lightning-icon icon-name={selectedOption.icon} size="x-small"></lightning-icon>
+                                </span>
                                 <button type="button"
                                     class="slds-input_faux slds-combobox__input slds-combobox__input-value"
                                     aria-expanded="false" aria-haspopup="listbox">
@@ -29,38 +31,40 @@
                     <div class="slds-combobox_container">
                         <div class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click"
                             aria-expanded="true" aria-haspopup="listbox" role="combobox">
-                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right slds-m-bottom_none"
+                            <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
                                 role="none">
                                 <lightning-input label={label} onfocus={handleSearchFocus} onblur={handleSearchBlur}
                                     onchange={handleSearchChange} class={publicStyle} disabled={isInputDisabled}
                                     is-loading={isLoading} placeholder={placeholder} required={required}>
                                 </lightning-input>
-
+                                <!-- <span class="slds-icon_container slds-icon-utility-down slds-input__icon slds-input__icon_right">
+                                    <lightning-icon icon-name="utility:down" size="x-small"></lightning-icon>
+                                </span> -->
                             </div>
-                            <div
-                                class="slds-dropdown slds-dropdown_length-10 slds-dropdown_fluid slds-m-top_none"
-                                role="listbox">
+                            <div class="slds-dropdown slds-dropdown_length-10 slds-dropdown_fluid" role="listbox">
                                 <ul class="slds-listbox slds-listbox_vertical" role="presentation">
                                     <template for:each={options} for:item="option" for:index="index">
                                         <template if:false={option.hidden}>
                                             <li role="presentation" class="slds-listbox__item" key={option.value}
                                                 data-index={index} onmousedown={handleOptionSelect}>
-                                                <!-- <div class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option"> -->
-                                                <div class={optionClass} role="option">
-                                                    <span class="slds-media__figure slds-listbox__option-icon">
-                                                        <template if:true={option.icon}>
-                                                            <lightning-icon icon-name={option.icon} size="x-small">
+                                                <div class="slds-media slds-media_center slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
+                                                    role="option">
+                                                    <!-- <div class={optionClass} role="option"> -->
+                                                    <template if:true={option.icon}>
+                                                        <span class="slds-media__figure slds-listbox__option-icon">
+                                                            <lightning-icon icon-name={option.icon} size={iconSize}>
                                                             </lightning-icon>
-
-                                                        </template>
-                                                    </span> <span class="slds-media__body">
+                                                        </span>
+                                                    </template>
+                                                    <span class="slds-media__body">
                                                         <span
                                                             class="slds-listbox__option-text slds-listbox__option-text_entity">{option.label}</span>
                                                         <span
                                                             class="slds-listbox__option-meta slds-listbox__option-meta_entity">{option.sublabel}</span>
                                                     </span>
                                                     <template if:true={option.rightIcon}>
-                                                        <lightning-icon icon-name={option.rightIcon} size="x-small"></lightning-icon>
+                                                        <lightning-icon icon-name={option.rightIcon} size="x-small">
+                                                        </lightning-icon>
                                                     </template>
                                                 </div>
                                             </li>
@@ -88,15 +92,17 @@
             <template if:true={showPills}>
                 <div class="slds-scrollable">
                     <template for:each={selectedOptions} for:item="selectedValue" for:index="index">
-                        <lightning-pill label={selectedValue.label} data-index={index} onremove={handleOptionUnselect}
-                            title={selectedValue.value} key={selectedValue.value} class="slds-p-top_xx-small">
-                        </lightning-pill>
+                        <span class="slds-p-around_xxx-small" key={selectedValue.value}>
+                            <lightning-pill label={selectedValue.label} data-index={index}
+                                onremove={handleOptionUnselect} title={selectedValue.value}>
+                                <template if:true={selectedValue.icon}>
+                                    <lightning-icon icon-name={selectedValue.icon}></lightning-icon>
+                                </template>
+                            </lightning-pill>
+                        </span>
                     </template>
                 </div>
             </template>
         </div>
-        <template if:true={errorMessage}>
-            There was an error fetching the fields for object '{objectName}': {errorMessage}
-        </template>
     </div>
 </template>
