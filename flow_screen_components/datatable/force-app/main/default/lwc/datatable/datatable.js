@@ -21,6 +21,8 @@ import ClearFilterAction from '@salesforce/label/c.ers_ClearFilterAction';
 import ColumnHeader from '@salesforce/label/c.ers_ColumnHeader';
 import FilterHeader from '@salesforce/label/c.ers_FilterHeader';
 import LabelHeader from '@salesforce/label/c.ers_LabelHeader';
+import RequiredMessage from '@salesforce/label/c.ers_ErrorRequiredEntry';
+import EmptyMessage from '@salesforce/label/c.ers_EmptyTableMessage';
 
 const CONSTANTS = getConstants();   // From ers_datatableUtils : VERSION_NUMBER, MAXROWCOUNT, ROUNDWIDTH, MYDOMAIN, ISCOMMUNITY
 
@@ -39,7 +41,9 @@ export default class Datatable extends LightningElement {
         ClearFilterAction,
         ColumnHeader,
         FilterHeader,
-        LabelHeader
+        LabelHeader,
+        RequiredMessage,
+        EmptyMessage
     };
 
     // Component Input & Output Attributes
@@ -71,7 +75,7 @@ export default class Datatable extends LightningElement {
 
 
     _tableData;
-   
+
     @api
     get tableData() {
         return this._tableData || [];
@@ -80,7 +84,9 @@ export default class Datatable extends LightningElement {
     set tableData(data = []) {
         if (Array.isArray(data)) {
             this._tableData = data;
-            this.processDatatable();
+            if(this.columnFields) {
+                this.processDatatable();
+            }
         } else {
             this._tableData = [];
         }
@@ -180,18 +186,25 @@ export default class Datatable extends LightningElement {
         return JSON.stringify(this.tableData);
     }
     set serializedRecordData(value) {
-        if(this.isSerializedRecordData) {
+        if(this.isSerializedRecordData && this.isUpdateTable) {
             if(value) {
                 this._tableData = JSON.parse(value);
             } else {
                 this._tableData = [];
             }
-
+            this.outputEditedRows = [];
+            this.dispatchEvent(new FlowAttributeChangeEvent('outputEditedRows', this.outputEditedRows));
+            this.outputEditedSerializedRows = '';
+            this.dispatchEvent(new FlowAttributeChangeEvent('outputEditedSerializedRows', this.outputEditedSerializedRows));
             setTimeout(function() {
                 this.connectedCallback();
-              }.bind(this), 1000);
+            }.bind(this), 1000);
         }
+        this.isUpdateTable = true;
     }                                             //NEW
+    
+    isUpdateTable = true;
+
     @api                                                                    //NEW
     get isSerializedRecordData(){
         return (this.cb_isSerializedRecordData == CB_TRUE) ? true : false;
@@ -209,6 +222,11 @@ export default class Datatable extends LightningElement {
         return (this.cb_allowOverflow == CB_TRUE) ? true : false;
     }
     @api cb_allowOverflow;
+
+    @api 
+    get emptyTableMessage() {
+        return this.label.EmptyMessage;
+    }
 
     @api tableDataString = [];
     @api preSelectedRowsString = [];
@@ -249,8 +267,8 @@ export default class Datatable extends LightningElement {
     @api types = [];
         
     // Other Datatable attributes
-    @api sortedBy;
-    @api sortDirection; 
+    @api sortedBy = '';
+    @api sortDirection = '';
     @api maxRowSelection;
     @api errors;
     @api columnWidthValues;
@@ -263,6 +281,9 @@ export default class Datatable extends LightningElement {
     @track isAllFilter = false;
     @track showClearButton = false;
     @track tableHeightAttribute = 'height:';
+    @track tableBorderStyle = 'border-left: var(--lwc-borderWidthThin,1px) solid var(--lwc-colorBorder,rgb(229, 229, 229));' 
+        +' border-top: var(--lwc-borderWidthThin,1px) solid var(--lwc-colorBorder,rgb(229, 229, 229));' 
+        + ' border-right: var(--lwc-borderWidthThin,1px) solid var(--lwc-colorBorder,rgb(229, 229, 229)); margin: -1px;';
 
     // Handle Lookup Field Variables   
     @api lookupId;
@@ -358,6 +379,9 @@ export default class Datatable extends LightningElement {
         return this.tableLabel;
     }
 
+    get isShowTable() {
+        return this.mydata.length > 0;
+    }
     get linkTarget() {
         return (this.openLinkinSameTab) ? '_self' : '_blank';
     }
@@ -774,7 +798,12 @@ export default class Datatable extends LightningElement {
                 data.forEach(record => { 
                     delete record['attributes'];   
                 });
-            } 
+            } else {
+                data = (this._tableData) ? JSON.parse(this.tableDataString) : [];
+                data.forEach(record => { 
+                    delete record['attributes'];    // When running the Column Wizard, clean up the record string before getting the field details from ers_DatatableController
+                });
+            }
 
             let fieldList = (this.columnFields.length > 0) ? this.columnFields.replace(/\s/g, '') : ''; // Remove spaces
             console.log('Passing data to Apex Controller', data);
@@ -1229,7 +1258,7 @@ export default class Datatable extends LightningElement {
 
     updatePreSelectedRows() {
         // Handle pre-selected records
-        if(!this.outputSelectedRows && this.outputSelectedRows.length === 0) {
+        if(!this.outputSelectedRows || this.outputSelectedRows.length === 0) {
             this.outputSelectedRows = this.preSelectedRows.slice(0, this.maxNumberOfRows);
         
             this.updateNumberOfRowsSelected(this.outputSelectedRows);
@@ -1245,6 +1274,8 @@ export default class Datatable extends LightningElement {
                 selectedKeys.push(record[this.keyField]);            
             });
             this.selectedRows = selectedKeys;
+            this.preSelectedRows = [];
+            this.dispatchEvent(new FlowAttributeChangeEvent('preSelectedRows', this.preSelectedRows));
         }
     }
 
@@ -1412,11 +1443,27 @@ export default class Datatable extends LightningElement {
                     }
                 });                
 
+                // Repeat offset for date fields (v3.4.5)
+                let datefield = this.dateFieldArray;
+                datefield.forEach(date => {
+                    if (field[date]) {
+                        let rdt = Date.parse(field[date]);
+                        let rd = new Date();
+                        field[date] = new Date(rd.setTime(Number(rdt) - Number(this.timezoneOffset)));
+                    }
+                });
+
                 this.outputEditedRows = [...this.outputEditedRows,eitem];     // Add to output attribute collection
             }
             return eitem;
         }); 
+        
+        this.isUpdateTable = false;
         this.dispatchEvent(new FlowAttributeChangeEvent('outputEditedRows', this.outputEditedRows));
+        if(this.isSerializedRecordData) {
+            this.outputEditedSerializedRows = JSON.stringify(this.outputEditedRows);
+            this.dispatchEvent(new FlowAttributeChangeEvent('outputEditedSerializedRows', this.outputEditedSerializedRows));
+        }
 
         this.savePreEditData = [...data];   // Resave the current table values
         this.mydata = [...data];            // Reset the current table values
@@ -1454,7 +1501,9 @@ export default class Datatable extends LightningElement {
             this.setIsInvalidFlag(true);
         }
         this.outputSelectedRows = [...currentSelectedRows]; 
-        this.dispatchEvent(new FlowAttributeChangeEvent('outputSelectedRows', this.outputSelectedRows));      
+        this.dispatchEvent(new FlowAttributeChangeEvent('outputSelectedRows', this.outputSelectedRows));
+        this.outputSelectedRowsString = JSON.stringify(this.outputSelectedRows);
+        this.dispatchEvent(new FlowAttributeChangeEvent('outputSelectedRowsString', this.outputSelectedRowsString));       
     }
 
     updateNumberOfRowsSelected(currentSelectedRows) {
@@ -1464,7 +1513,7 @@ export default class Datatable extends LightningElement {
         // Return an SObject Record if just a single row is selected
         this.outputSelectedRow = (this.numberOfRowsSelected == 1) ? currentSelectedRows[0] : null;
         this.dispatchEvent(new FlowAttributeChangeEvent('outputSelectedRow', this.outputSelectedRow));
-        this.showClearButton = this.numberOfRowsSelected == 1 && (this._tableData.length == 1 && this.singleRowSelection) && !this.hideCheckboxColumn && !this.hideClearSelectionButton;
+        this.showClearButton = (this.numberOfRowsSelected == 1 && (this._tableData.length == 1 || this.singleRowSelection)) && !this.hideCheckboxColumn && !this.hideClearSelectionButton;
     }
 
     handleClearSelection() {
@@ -1481,8 +1530,11 @@ export default class Datatable extends LightningElement {
         // Handle column sorting
         console.log('Sort:',event.detail.fieldName,event.detail.sortDirection);
         this.sortedBy = event.detail.fieldName;
-        this.sortedDirection = event.detail.sortDirection;
-        this.doSort(this.sortedBy, this.sortedDirection);
+        this.sortDirection = event.detail.sortDirection;
+        this.isUpdateTable = false;
+        this.dispatchEvent(new FlowAttributeChangeEvent('sortedBy', this.sortedBy));
+        this.dispatchEvent(new FlowAttributeChangeEvent('sortDirection', this.sortDirection));
+        this.doSort(this.sortedBy, this.sortDirection);
     }
 
     doSort(sortField, sortDirection) {
@@ -1622,7 +1674,7 @@ export default class Datatable extends LightningElement {
 
                 this.filterColumns[this.columnNumber].actions.find(a => a.name == 'clear_'+this.columnNumber).disabled = true;
                 if (this.sortedBy != undefined) {
-                    this.doSort(this.sortedBy, this.sortedDirection);       // Re-Sort the data
+                    this.doSort(this.sortedBy, this.sortDirection);       // Re-Sort the data
                 }
                 break;
 
@@ -1767,11 +1819,11 @@ export default class Datatable extends LightningElement {
     handleCommitIconSelection(event) { 
         // Update the column icon value
         let newValue = this.selectedIcon;
-        if (newValue) {
+        // if (newValue) {  //v3.4.5
             this.filterColumns[this.columnNumber].iconName = newValue;
             this.columns = [...this.filterColumns]; 
             this.updateIconParam();
-        }
+        // }
         this.isOpenIconInput = false;
     }
 
@@ -2017,6 +2069,7 @@ export default class Datatable extends LightningElement {
             const selData = this._tableData.find(d => d[this.keyField] == srow[this.keyField]);
             sdata.push(selData);
         });
+        this.isUpdateTable = false;
         this.outputSelectedRows = [...sdata]; // Set output attribute values
         this.dispatchEvent(new FlowAttributeChangeEvent('outputSelectedRows', this.outputSelectedRows));
 
@@ -2070,7 +2123,7 @@ export default class Datatable extends LightningElement {
             this.setIsInvalidFlag(true);
             return { 
                 isValid: false, 
-                errorMessage: 'This is a required entry.  At least 1 row must be selected.' 
+                errorMessage: this.label.RequiredMessage
             }; 
         }
         
