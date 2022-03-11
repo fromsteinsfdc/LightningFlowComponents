@@ -34,6 +34,7 @@ export default class fsc_pickObjectAndField extends LightningElement {
 
     @track _objectType;
     @track _field;
+    @track _selectedFields = [];    // Used when allowFieldMultiselect = true
     @track objectTypes = standardObjectOptions;
     @track fields;
     @track errors = [];
@@ -63,6 +64,14 @@ export default class fsc_pickObjectAndField extends LightningElement {
     set field(value) {
         this._field = value;
         this.fieldDataType = getDataType(value);
+    }
+
+    @api get selectedFields() {
+        return this._selectedFields;
+    }
+
+    set selectedFields(value) {
+        this._selectedFields = value;
     }
 
     connectedCallback() {
@@ -214,7 +223,12 @@ console.log("🚀 ~ file: fsc_pickObjectAndField.js ~ line 75 ~ fsc_pickObjectAn
 
     handleFieldUpdate(event) {
         console.log('in handleFieldUpdate');
-        console.log(JSON.stringify(event.detail.value));
+        console.log('detail = '+ JSON.stringify(event.detail));
+        if (this.allowFieldMultiselect) {
+            this.selectedFields = event.detail.values;
+        } else {
+            this.handleFieldChange(event);
+        }
     }
 
     dispatchDataChangedEvent(detail) {

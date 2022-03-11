@@ -15,6 +15,7 @@
             <property name="fieldLabel" type="String" role="inputOnly"> </property>
             <property name="objectType" type="String"> </property>
             <property name="field" type="String"> </property>
+            <property name="selectedFields" type="String[]"> </property>
             <property name="disableObjectPicklist" type="Boolean" role="inputOnly"> </property>
             <property name="availableObjectTypes" type="String" role="inputOnly"> </property>
             <property name="availableFields" type="String" role="inputOnly"> </property>

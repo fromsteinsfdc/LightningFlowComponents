@@ -1,4 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import getObjectFields from '@salesforce/apex/usf.FieldSelectorController.getObjectFields';
 
 const CLASSES = {
@@ -10,6 +11,28 @@ const CLASSES = {
 const LIGHTNING = {
     INPUT: 'lightning-input'
 }
+
+const DATA_TYPE_ICONS = {
+    Address: 'utility:location',
+    Boolean: 'utility:check',
+    ComboBox: 'utility:picklist_type',
+    Currency: 'utility:currency',
+    Date: 'utility:date_input',
+    DateTime: 'utility:date_time',
+    Double: 'utility:number_input',
+    Email: 'utility:email',
+    Int: 'utility:number_input',
+    Location: 'utility:location',
+    MultiPicklist: 'utility:multi_picklist',
+    Percent: 'utility:percent',
+    Phone: 'utility:phone_portrait',
+    Picklist: 'utility:picklist_type',
+    Reference: 'utility:record_lookup',
+    Time: 'utility:date_time',
+    Url: 'utility:link'
+}
+const DEFAULT_ICON = 'utility:text';
+
 
 export default class FieldSelector extends LightningElement {
     @api objectName;
@@ -45,6 +68,11 @@ export default class FieldSelector extends LightningElement {
         return this.selectedField && this.selectedField.name;
     }
 
+    @api
+    get selectedValues() {
+        return this.selectedFields.map(field => field.name);
+    }
+
     @api preselectedValuesString;
 
     @api
@@ -67,6 +95,45 @@ export default class FieldSelector extends LightningElement {
     isLoading;
     noMatchString = 'No matches found';
     objectChangeCount = 0;
+    isNotFirstObjectLoad;
+
+    // @wire(getObjectInfo, {objectApiName: '$objectName'})
+    // handleGetObjectInfo({error, data}) {
+    //     this.isLoading = true;
+
+    //     if (this.isNotFirstObjectLoad) {
+    //         this.selectedFields = [];
+    //         this.dispatchFields();
+    //     } else {
+    //         this.isNotFirstObjectLoad = true;
+    //     }
+
+    //     if (error) {
+    //         this.errors = 'Unknown error';
+    //         if (Array.isArray(error.body)) {
+    //             this.error = error.body.map(e => e.message).join(', ');
+    //         } else if (typeof error.body.message === 'string') {
+    //             this.error = error.body.message;
+    //         }
+    //     } else if (data) {
+    //         this.fields = Object.values(data.fields).map(field => {                
+    //             return {
+    //                 label: field.label,
+    //                 sublabel: field.apiName,
+    //                 value: field.apiName,
+    //                 icon: this.hideIcons ? null : (DATA_TYPE_ICONS[field.dataType] || DEFAULT_ICON)
+    //             }
+    //         });
+    //         this.fields.sort((a, b) => {
+    //             return a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1;
+    //         });
+    //         // if (this.preselectedValuesString) {
+    //         //     console.log('preselectedValuesString = '+ this.preselectedValuesString);
+    //         //     this.setFieldsFromString(this.preselectedValuesString);
+    //         // }
+    //     }
+    //     this.isLoading = false;
+    // }
 
     @wire(getObjectFields, { objectName: '$objectName' })
     handleGetObjectFields({ error, data }) {
@@ -156,7 +223,10 @@ export default class FieldSelector extends LightningElement {
         this.dropdownTrigger.classList.remove(CLASSES.IS_OPEN);
     }
 
-    filterOptions(searchText = '') {
+    filterOptions(searchText) {
+        if (!searchText)
+            searchText = '';
+        console.log('in filterOptions, searchText = '+ searchText);
         searchText = searchText.toLowerCase();
         for (let field of this.fields) {
             if (this.selectedFields.some(el => el.name === field.name))
@@ -169,13 +239,19 @@ export default class FieldSelector extends LightningElement {
                 }
             }
         }
+        console.log('finished filterOptions');
+    }
+
+    setFieldsFromString(fieldNameString) {
+        let fieldNames = fieldNameString.split(',');
+        this.selectedFields = this.fields.filter(field => fieldNames.includes(field.value));
+        console.log('selectedFields = '+ JSON.stringify(this.selectedFields));
     }
 
     dispatchFields() {
         this.dispatchEvent(new CustomEvent('fieldupdate', { detail: { 
-            value: this.selectedFields,
-            values: this.selectedFields,
-            selectedField: this.selectedField
+            value: this.selectedValue,
+            values: this.selectedValues
         } }));
     }
 
@@ -213,6 +289,7 @@ export default class FieldSelector extends LightningElement {
     handleClearClick(event) {
         console.log('in handleClearClick');
         this.selectedFields = [];
+        this.dispatchFields();
         // These don't work, I think because the input hasn't rerendered yet
         // this.filterOptions();
         // this.showList();
