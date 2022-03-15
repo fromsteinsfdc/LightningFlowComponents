@@ -49,13 +49,13 @@
                                                 data-index={index} onmousedown={handleOptionSelect}>
                                                 <div class="slds-media slds-media_center slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
                                                     role="option">
-                                                    <!-- <div class={optionClass} role="option"> -->
-                                                    <template if:true={option.icon}>
-                                                        <span class="slds-media__figure slds-listbox__option-icon">
+                                                    <span class="slds-media__figure slds-listbox__option-icon">
+                                                        <template if:true={option.icon}>
                                                             <lightning-icon icon-name={option.icon} size={iconSize}>
                                                             </lightning-icon>
-                                                        </span>
-                                                    </template>
+                                                        </template>
+                                                    </span>
+
                                                     <span class="slds-media__body">
                                                         <span
                                                             class="slds-listbox__option-text slds-listbox__option-text_entity">{option.label}</span>

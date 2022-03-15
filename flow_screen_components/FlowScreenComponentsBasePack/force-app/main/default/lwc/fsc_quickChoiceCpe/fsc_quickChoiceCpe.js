@@ -56,6 +56,7 @@ export default class QuickChoiceCpe extends LightningElement {
 
     displayChoicesAsOptions = [
         { label: 'Picklist', value: 'Picklist' },
+        { label: 'Combobox', value: 'Combobox' },
         { label: 'Radio Button Group', value: 'Radio' },
         { label: 'Visual Cards', value: 'Visual' }
     ];

@@ -132,7 +132,7 @@ Additional components packaged with this LWC:
         </template>
 
         <!-- Display Picklist -->
-        <template if:false={showRadio}>
+        <template if:true={showPicklist}>
             <div style={inputStyle}>
                 <lightning-combobox 
                     name={masterLabel} 
@@ -145,6 +145,19 @@ Additional components packaged with this LWC:
             </div>
         </template>
 
+        <!-- Display Combobox -->
+        <template if:true={showCombobox}>
+            <div style={inputStyle}>
+                <c-fsc_combobox 
+                    name={masterLabel} 
+                    label={masterLabel} 
+                    value={selectedValue}
+                    options={options}
+                    required={required} 
+                    valuechange={handleChange}>
+                </c-fsc_combobox>
+            </div>
+        </template>
     </template>
 
 </template>

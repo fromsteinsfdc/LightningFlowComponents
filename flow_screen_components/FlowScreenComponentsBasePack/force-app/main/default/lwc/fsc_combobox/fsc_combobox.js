@@ -25,8 +25,9 @@ export default class OptionSelector extends LightningElement {
     @api disabled = false;
     @api allowMultiselect = false;
     @api hidePills = false; // If true, list of selected pills in multiselect mode will not be displayed (generally because a parent component wants to display them differently).
-    @api excludeSublabelInFilter = false;   // If true, the 'sublabel' text of an option is included when determining if an option is a match for a given search text.
-    @api includeValueInFilter = false;  // If true, the 'value' text of an option is not included when determining if an option is a match for a given search text.
+    @api excludeSublabelInFilter = false;   // If true, the 'sublabel' text of an option is not included when determining if an option is a match for a given search text.
+    @api includeValueInFilter = false;  // If true, the 'value' text of an option is included when determining if an option is a match for a given search text.
+    @api filterActions = false; // If true, action items will be filtered along with selection items. By default, action items are always visible
     @api hideSelectedValues = false;    // Reserved for future use
 
     @api
@@ -58,7 +59,8 @@ export default class OptionSelector extends LightningElement {
 
     @api
     get value() {
-        return this.values.length ? this.values[0] : null;
+        // return this.values.length ? this.values[0] : null;
+        return this.values.join();
     }
     set value(value) {
         this.values = value ? [value] : [];
@@ -66,6 +68,7 @@ export default class OptionSelector extends LightningElement {
 
     @api
     get selectedOptions() {
+        return this.options.filter(option => this.values.includes(option.value));
         let options = [];
         for (let value of this.values) {
             options.push(this.options.find(option => option.value === value));
@@ -96,14 +99,12 @@ export default class OptionSelector extends LightningElement {
         return JSON.stringify(this.values);
     }
 
-    // @track _selectedOptions = [];
     errorMessage;
     isLoading;
     debounceTimer;    
 
     connectedCallback() {
         // console.log(JSON.stringify(this.options));
-        console.log('in combobox, debouncedelay = '+ this.debounceDelay, Number.isInteger(this.debounceDelay));
     }
 
     get dropdownTrigger() {
@@ -119,7 +120,7 @@ export default class OptionSelector extends LightningElement {
     }
 
     get noMatchFound() {
-        return this.options.every(option => option.hidden);
+        return this.options.every(option => option.hidden || option.isAction);
     }
 
     get showSelectedValue() {
@@ -146,7 +147,6 @@ export default class OptionSelector extends LightningElement {
     filterOptions(searchText = '') {
         searchText = searchText.toLowerCase();
         for (let option of this.options) {
-            // if (this.hideSelectedValues && this.values.includes(option.value)) {
             if (this.values.includes(option.value)) {
                 option.hidden = true;
             }
@@ -164,29 +164,30 @@ export default class OptionSelector extends LightningElement {
     }
 
     dispatchOptions() {
-        let detail;
-        if (this.allowMultiselect) {
-            detail = {
-                values: this.values,
-                selectedOptions: this.selectedOptions
-            }
-        } else {
-            detail = {
-                value: this.value,
-                selectedOption: this.selectedOption
-            }
-        }
-        this.dispatchEvent(new CustomEvent('valuechange', { detail: detail }));
+        let detail = {
+            value: this.value,
+            values: this.values,
+            selectedOptions: this.selectedOptions
+        }        
+        // let detail;
+        // if (this.allowMultiselect) {
+        //     detail = {
+        //         values: this.values,
+        //         selectedOptions: this.selectedOptions
+        //     }
+        // } else {
+        //     detail = {
+        //         value: this.value,
+        //         selectedOption: this.selectedOption
+        //     }
+        // }
+        this.dispatchEvent(new CustomEvent('valuechange', { detail }));
     }
 
     /* EVENT HANDLERS */
     handleSearchChange(event) {        
-        // console.log('in handleSearchChange');
-        // console.log('customSearchHandler = '+ this.customSearchHandler);
-        // console.log(JSON.stringify(this.customSearchHandler));
         this.debounce(
             () => this.customSearchHandler ? this.customSearchHandler(this.inputElement.value) : this.filterOptions(this.inputElement.value),
-            // parseInt(this.debounceDelay, 10)
             this.debounceDelay
         );
     }
@@ -205,14 +206,19 @@ export default class OptionSelector extends LightningElement {
     }
 
     handleOptionSelect(event) {
-        let selectedIndex = event.currentTarget.dataset.index;
-        if (this.allowMultiselect) {
-            this.values.push(this.options[selectedIndex].value);
-            this.inputElement.value = null;
+        let selectedOption = this.options[event.currentTarget.dataset.index];
+        if (selectedOption.isAction) {
+            this.dispatchEvent(new CustomEvent('customaction', { detail: selectedOption.value }));
+
         } else {
-            this.value = this.options[selectedIndex].value;
+            if (this.allowMultiselect) {
+                this.values.push(selectedOption.value);
+                this.inputElement.value = null;
+            } else {
+                this.value = selectedOption.value;
+            }
+            this.dispatchOptions();
         }
-        this.dispatchOptions();
     }
 
     handleOptionUnselect(event) {

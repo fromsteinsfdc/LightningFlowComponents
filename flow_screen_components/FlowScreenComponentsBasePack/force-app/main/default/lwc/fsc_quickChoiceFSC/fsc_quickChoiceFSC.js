@@ -74,6 +74,8 @@ export default class QuickChoiceFSC extends LightningElement {
     @track _allLabels = [];
     @track showRadio = true;
     @track showVisual = false;
+    @track showCombobox = false;
+    @track showPicklist = false;
     @track legitInputModes = [
         "Picklist Field",
         "Single String Collection",
@@ -266,9 +268,15 @@ export default class QuickChoiceFSC extends LightningElement {
 
         }
 
-        if (this.displayMode === "Picklist") {
-            console.log("setting Picklist on");
+        if (this.displayMode === "Picklist" || this.displayMode === "Combobox") {
             this.showRadio = false;
+            if (this.displayMode === "Combobox") {
+                console.log("setting Combobox on");                
+                this.showCombobox = true;
+            } else {
+                console.log("setting Picklist on");                
+                this.showPicklist = true;
+            }
         }
 
         //console.log("initializing smartChoice. inputMode is: " + this.inputMode);
